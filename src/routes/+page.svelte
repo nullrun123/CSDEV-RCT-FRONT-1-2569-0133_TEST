@@ -2,10 +2,26 @@
     import { Button } from "$lib/components/ui/button/index.js";
 
     import type { PageProps } from './$types';
+    const {data}:PageProps = $props();
 
-    import { emojidata, imagefamily } from '$lib/emojiData';
-  
-    const props:PageProps = $props();
+    const emojiData = data.emojidata;
+
+    // copy image
+    async function copyImageToClipboard(imageUrl: string) {
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob
+                })
+            ]);
+
+        } catch (error) {
+            console.error('Failed to copy image: ', error);
+        }
+    }
 </script>
 
 <div class="max-w-6xl mx-auto h-full">
@@ -46,12 +62,15 @@
 
     <div class="flex gap-3 flex-col items-center">
         <h1 class="text-xl font-semibold">Explore</h1>
+
          <div class="flex items-start bg-[#1F1F1F] p-5 rounded-2xl w-full min-h-[400px] overflow-x-auto">
            <ul class="grid grid-cols-5 md:grid-cols-9 w-full gap-4">
-            {#each emojidata as emoji}
-                <li class="w-full flex items-center flex-col p-5 rounded-md hover:bg-accent">
-                    <img src={emoji.img} alt={emoji.title} class="w-12 h-12 object-contain">
-                    <p class="text-sm mt-1.5">{emoji.title}</p>
+            {#each emojiData as emoji}
+                <li id={emoji.id} class="w-full flex items-center flex-col p-5 rounded-md hover:bg-accent cursor-pointer transition-transform active:scale-95" 
+                    onclick={() => copyImageToClipboard(`/api/emoji/${emoji.id}`)}
+                    >
+                    <img src={`/api/emoji/${emoji.id}`} alt={emoji.name} class="w-12 h-12 object-contain" >
+                    <p class="text-sm mt-1.5">{emoji.name}</p>
                 </li>
             {/each}
             </ul>
